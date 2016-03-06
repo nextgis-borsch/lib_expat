@@ -1,16 +1,34 @@
 # This file is copyrighted under the BSD-license for buildsystem files of KDE
 # copyright 2010, Patrick Spendrin <ps_ml@gmx.de>
 
+cmake_minimum_required (VERSION 2.8.12 FATAL_ERROR)
+
 project(expat)
 
-cmake_minimum_required(VERSION 2.6)
+# some init settings
+set(CMAKE_COLOR_MAKEFILE ON)
+# set path to additional CMake modules
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE INTERNAL "Installation directory for executables" FORCE)
+set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
+set(INSTALL_INC_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE INTERNAL "Installation directory for headers" FORCE)
+
+
+# setup package meta-data
+include(util)
+
+check_version(EXPAT_MAJOR_VERSION EXPAT_MINOR_VERSION EXPAT_REV_VERSION)
+set(VERSION ${EXPAT_MAJOR_VERSION}.${EXPAT_MINOR_VERSION}.${EXPAT_REV_VERSION})
+
+report_version(${PROJECT_NAME} ${VERSION})  
+
+
 set(PACKAGE_BUGREPORT "expat-bugs@libexpat.org")
 set(PACKAGE_NAME "expat")
-set(PACKAGE_VERSION "2.1.0")
+set(PACKAGE_VERSION ${VERSION})
 set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME "${PACKAGE_NAME}")
-
-option(BUILD_shared "build a shared expat library" ON)
 
 # configuration options
 set(XML_CONTEXT_BYTES 1024 CACHE STRING "Define to specify how much context to retain around the current parse point")
@@ -19,21 +37,21 @@ option(XML_NS "Define to make XML Namespaces functionality available" ON)
 
 if(XML_DTD)
     set(XML_DTD 1)
-else(XML_DTD)
+else()
     set(XML_DTD 0)
-endif(XML_DTD)
+endif()
 if(XML_NS)
     set(XML_NS 1)
-else(XML_NS)
+else()
     set(XML_NS 0)
-endif(XML_NS)
+endif()
 
-include(ConfigureChecks.cmake)
+include(ConfigureChecks)
 
 include_directories(${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/lib)
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -wd4996)
-endif(MSVC)
+endif()
 
 set(expat_SRCS
     lib/xmlparse.c
@@ -43,21 +61,40 @@ set(expat_SRCS
     lib/xmltok_ns.c
 )
 
-if(WIN32 AND BUILD_shared)
+if(WIN32 AND BUILD_SHARED_LIBS)
     set(expat_SRCS ${expat_SRCS} lib/libexpat.def)
-endif(WIN32 AND BUILD_shared)
+endif()
 
-if(BUILD_shared)
-    set(_SHARED SHARED)
-else(BUILD_shared)
-    set(_SHARED STATIC)
-endif(BUILD_shared)
+set(LIB_NAME)
+if(BUILD_SHARED_LIBS)
+    set(LIB_TYPE SHARED)
+    set(LIB_NAME ${PROJECT_NAME})
+else()
+    set(LIB_TYPE STATIC)
+    set(LIB_NAME ${PROJECT_NAME}static)
+endif()
 
-add_library(expat ${_SHARED} ${expat_SRCS})
+add_library(${LIB_NAME} ${LIB_TYPE} ${expat_SRCS})
 
-install(TARGETS expat RUNTIME DESTINATION bin
-                      LIBRARY DESTINATION lib
-                      ARCHIVE DESTINATION lib)
+if(BUILD_SHARED_LIBS)
+    if(WIN32)
+        set (LIB_VERSION ${EXPAT_MAJOR_VERSION})
+        if(MSVC)        
+            set_target_properties(${LIB_NAME} PROPERTIES IMPORT_SUFFIX "_i.lib")
+        endif()
+    else ()
+        set (LIB_VERSION ${VERSION})
+    endif()    
+    set_target_properties (${LIB_NAME} PROPERTIES VERSION ${LIB_VERSION})
+    set_target_properties (${LIB_NAME} PROPERTIES SOVERSION ${LIB_VERSION})
+endif()
+
+
+export(TARGETS ${LIB_NAME} FILE ${LIB_NAME}-exports.cmake EXPORT_LINK_INTERFACE_LIBRARIES)
+
+install(TARGETS ${LIB_NAME} RUNTIME DESTINATION ${INSTALL_BIN_DIR} COMPONENT libraries
+                      LIBRARY DESTINATION ${INSTALL_LIB_DIR} COMPONENT libraries
+                      ARCHIVE DESTINATION ${INSTALL_LIB_DIR} COMPONENT libraries)
 
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}/bin")
@@ -65,7 +102,8 @@ set(libdir "\${prefix}/lib")
 set(includedir "\${prefix}/include")
 configure_file(expat.pc.in ${CMAKE_CURRENT_BINARY_DIR}/expat.pc)
 
-install(FILES lib/expat.h lib/expat_external.h DESTINATION include)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/expat.pc DESTINATION lib/pkgconfig)
+install(FILES lib/expat.h lib/expat_external.h DESTINATION ${INSTALL_INC_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/expat.pc DESTINATION ${INSTALL_LIB_DIR}/pkgconfig)
 
-
+# uninstall
+add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
