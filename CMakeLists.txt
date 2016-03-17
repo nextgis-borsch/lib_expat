@@ -55,7 +55,7 @@ include(ConfigureChecks)
 
 include_directories(${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/lib)
 if(MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -wd4996)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -wd4996 -DXML_BUILDING_EXPAT)
 endif()
 
 set(expat_SRCS
