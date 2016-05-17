@@ -77,6 +77,9 @@ if(BUILD_SHARED_LIBS)
 else()
     set(LIB_TYPE STATIC)
     set(LIB_NAME ${PROJECT_NAME}static)
+    
+    set( CMAKE_CXX_FLAGS "-fpic ${CMAKE_CXX_FLAGS}" )
+    set( CMAKE_C_FLAGS   "-fpic ${CMAKE_C_FLAGS}" )  
 endif()
 
 add_library(${LIB_NAME} ${LIB_TYPE} ${expat_SRCS})
