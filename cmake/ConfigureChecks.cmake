@@ -40,7 +40,7 @@ else(HAVE_SYS_TYPES_H)
     set(SIZE_T "unsigned")
 endif(HAVE_SYS_TYPES_H)
 
-configure_file(${CMAKE_MODULE_PATH}/expat_config.h.cmake ${CMAKE_BINARY_DIR}/expat_config.h)
+configure_file(${CMAKE_SOURCE_DIR}/cmake/expat_config.h.cmake ${CMAKE_BINARY_DIR}/expat_config.h)
 add_definitions(-DHAVE_EXPAT_CONFIG_H)
 
-configure_file(${CMAKE_MODULE_PATH}/uninstall.cmake.in ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake IMMEDIATE @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/cmake/uninstall.cmake.in ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake IMMEDIATE @ONLY)
