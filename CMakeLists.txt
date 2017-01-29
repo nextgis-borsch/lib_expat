@@ -26,7 +26,7 @@ include(util)
 check_version(EXPAT_MAJOR_VERSION EXPAT_MINOR_VERSION EXPAT_REV_VERSION)
 set(VERSION ${EXPAT_MAJOR_VERSION}.${EXPAT_MINOR_VERSION}.${EXPAT_REV_VERSION})
 
-report_version(${PROJECT_NAME} ${VERSION})  
+report_version(${PROJECT_NAME} ${VERSION})
 
 
 set(PACKAGE_BUGREPORT "expat-bugs@libexpat.org")
@@ -61,8 +61,8 @@ endif()
 set(expat_SRCS
     lib/xmlparse.c
     lib/xmlrole.c
-    lib/xmltok.c 
-    lib/xmltok_impl.c 
+    lib/xmltok.c
+    lib/xmltok_impl.c
     lib/xmltok_ns.c
 )
 
@@ -77,7 +77,7 @@ else()
     set(LIB_TYPE STATIC)
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
         set( CMAKE_CXX_FLAGS "-fpic ${CMAKE_CXX_FLAGS}" )
-        set( CMAKE_C_FLAGS   "-fpic ${CMAKE_C_FLAGS}" )  
+        set( CMAKE_C_FLAGS   "-fpic ${CMAKE_C_FLAGS}" )
     endif()
 endif()
 
@@ -86,12 +86,12 @@ add_library(${LIB_NAME} ${LIB_TYPE} ${expat_SRCS})
 if(BUILD_SHARED_LIBS)
     if(WIN32)
         set (LIB_VERSION ${EXPAT_MAJOR_VERSION})
-        if(MSVC)        
+        if(MSVC)
             set_target_properties(${LIB_NAME} PROPERTIES IMPORT_SUFFIX "_i.lib")
         endif()
     else ()
         set (LIB_VERSION ${VERSION})
-    endif()    
+    endif()
     set_target_properties (${LIB_NAME} PROPERTIES VERSION ${LIB_VERSION})
     set_target_properties (${LIB_NAME} PROPERTIES SOVERSION ${LIB_VERSION})
 endif()
@@ -100,7 +100,7 @@ if (REGISTER_PACKAGE)
     export(TARGETS ${LIB_NAME} FILE ${LIB_NAME}-exports.cmake)
 
     set(EXPORT_PACKAGE_NAME EXPAT)
-    set(EXPORT_PACKAGE_NAME_UPPER ${EXPORT_PACKAGE_NAME})
+    string(TOUPPER ${EXPORT_PACKAGE_NAME} EXPORT_PACKAGE_NAME_UPPER)
     set(EXPORT_PACKAGE_LIB_NAME ${LIB_NAME})
 
     export(PACKAGE ${EXPORT_PACKAGE_NAME})
@@ -109,8 +109,7 @@ if (REGISTER_PACKAGE)
     configure_package_config_file(
         ${CMAKE_SOURCE_DIR}/cmake/PackageConfig.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/${EXPORT_PACKAGE_NAME}Config.cmake
-        INSTALL_DESTINATION ${INSTALL_LIB_DIR}/cmake
-        PATH_VARS INSTALL_INC_DIR )
+        INSTALL_DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
     write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/${EXPORT_PACKAGE_NAME}ConfigVersion.cmake
         VERSION ${VERSION}
