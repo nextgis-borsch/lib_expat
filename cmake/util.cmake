@@ -49,7 +49,10 @@ function(check_version major minor rev)
     set(${major} ${XML_MAJOR_VERSION} PARENT_SCOPE)
     set(${minor} ${XML_MINOR_VERSION} PARENT_SCOPE)
     set(${rev} ${XML_MICRO_VERSION} PARENT_SCOPE)
-
+    
+    # Store version string in file for installer needs
+    file(TIMESTAMP ${CMAKE_CURRENT_SOURCE_DIR}/lib/expat.h VERSION_DATETIME "%Y-%m-%d %H:%M:%S" UTC)
+    file(WRITE ${CMAKE_BINARY_DIR}/version.str "${XML_MAJOR_VERSION}.${XML_MINOR_VERSION}.${XML_MICRO_VERSION}\n${VERSION_DATETIME}")
 endfunction(check_version)
 
 function(report_version name ver)
