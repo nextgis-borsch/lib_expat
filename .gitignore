@@ -31,5 +31,5 @@
 *~
 
 # build & inst
-build
-inst
+build/
+inst/

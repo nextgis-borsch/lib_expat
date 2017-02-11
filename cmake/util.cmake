@@ -30,8 +30,9 @@ function(check_version major minor rev)
 
     # parse the version number from expat.h and include in
     # major, minor and rev parameters
+    set(VERSION_FILE ${CMAKE_CURRENT_SOURCE_DIR}/lib/expat.h)
 
-    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/lib/expat.h _VERSION_H_CONTENTS)
+    file(READ ${VERSION_FILE} _VERSION_H_CONTENTS)
 
     string(REGEX MATCH "XML_MAJOR_VERSION[ \t]+([0-9]+)"
       XML_MAJOR_VERSION ${_VERSION_H_CONTENTS})
@@ -49,9 +50,9 @@ function(check_version major minor rev)
     set(${major} ${XML_MAJOR_VERSION} PARENT_SCOPE)
     set(${minor} ${XML_MINOR_VERSION} PARENT_SCOPE)
     set(${rev} ${XML_MICRO_VERSION} PARENT_SCOPE)
-    
+
     # Store version string in file for installer needs
-    file(TIMESTAMP ${CMAKE_CURRENT_SOURCE_DIR}/lib/expat.h VERSION_DATETIME "%Y-%m-%d %H:%M:%S" UTC)
+    file(TIMESTAMP ${VERSION_FILE} VERSION_DATETIME "%Y-%m-%d %H:%M:%S" UTC)
     file(WRITE ${CMAKE_BINARY_DIR}/version.str "${XML_MAJOR_VERSION}.${XML_MINOR_VERSION}.${XML_MICRO_VERSION}\n${VERSION_DATETIME}")
 endfunction(check_version)
 
@@ -60,7 +61,7 @@ function(report_version name ver)
     string(ASCII 27 Esc)
     set(BoldYellow  "${Esc}[1;33m")
     set(ColourReset "${Esc}[m")
-        
+
     message(STATUS "${BoldYellow}${name} version ${ver}${ColourReset}")
-    
-endfunction()    
+
+endfunction()
