@@ -126,7 +126,7 @@ elseif(OSX_FRAMEWORK)
       NO_SONAME ${NO_SONAME}
       )
 else()
-    add_library(${LIB_NAME} STATIC ${SRCS} ${PUBLIC_HDRS})
+    add_library(${LIB_NAME} STATIC ${expat_SRCS} ${expat_HEADERS})
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
         set( CMAKE_CXX_FLAGS "-fpic ${CMAKE_CXX_FLAGS}" )
         set( CMAKE_C_FLAGS   "-fpic ${CMAKE_C_FLAGS}" )
