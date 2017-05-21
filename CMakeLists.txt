@@ -97,7 +97,7 @@ if(WIN32 AND BUILD_SHARED_LIBS)
 endif()
 
 set(LIBCURRENT 7)   # sync
-set(LIBREVISION 2)  # with
+set(LIBREVISION ${EXPAT_MAJOR_VERSION})  # with
 set(LIBAGE 6)       # configure.ac!
 math(EXPR LIBCURRENT_MINUS_AGE "${LIBCURRENT} - ${LIBAGE}")
 
@@ -107,7 +107,7 @@ if(BUILD_SHARED_LIBS)
     set_target_properties (${LIB_NAME} PROPERTIES
         VERSION ${LIBCURRENT_MINUS_AGE}.${LIBAGE}.${LIBREVISION}
         SOVERSION ${LIBCURRENT_MINUS_AGE}
-        NO_SONAME ${NO_SONAME})
+    )
     if(MSVC)
         set_target_properties(${LIB_NAME} PROPERTIES IMPORT_SUFFIX "_i.lib")
     endif()
@@ -123,7 +123,6 @@ elseif(OSX_FRAMEWORK)
       PUBLIC_HEADER "${expat_HEADERS}"
       VERSION ${LIBCURRENT_MINUS_AGE}.${LIBAGE}.${LIBREVISION}
       SOVERSION ${LIBCURRENT_MINUS_AGE}
-      NO_SONAME ${NO_SONAME}
       )
 else()
     add_library(${LIB_NAME} STATIC ${expat_SRCS} ${expat_HEADERS})
