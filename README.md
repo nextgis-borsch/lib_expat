@@ -127,7 +127,7 @@ distribution.
 
 # Borsch
 
-This library with modifications in build scripts to support
+The library has modifications in build scripts to support
 [NextGIS Borsch](https://github.com/nextgis-borsch/borsch) building system. NextGIS Borsch helps to resolve
 dependencies of building C/C++ libraries and applications. NextGIS Borsch is based on [CMake](https://cmake.org/).
 
