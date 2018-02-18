@@ -1,0 +1,7 @@
+.,.,,"AUTHORS, Changes,README,COPYING,h,md,cmake,in"
+lib,lib,,"h,c,def"
+doc,doc,,"png,html,css,1,xml"
+tests,tests,,"h,c,cpp,py"
+tests/benchmark,tests/benchmark,,"c,txt"
+win32,win32,skip,
+xmlwf,xmlwf,,"h,c,cxx"
