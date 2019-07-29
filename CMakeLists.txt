@@ -48,6 +48,9 @@ if(CMAKE_GENERATOR_TOOLSET MATCHES "v([0-9]+)_xp")
     add_definitions(-D_WIN32_WINNT=0x0501)
 endif()
 
+set(PACKAGE_BUGREPORT "expat-bugs@libexpat.org")
+set(PACKAGE_NAME ${PROJECT_NAME})
+
 # setup package meta-data
 include(util)
 
@@ -59,9 +62,6 @@ if(OSX_FRAMEWORK)
 endif()
 report_version(${PROJECT_NAME} ${VERSION})
 
-
-set(PACKAGE_BUGREPORT "expat-bugs@libexpat.org")
-set(PACKAGE_NAME "expat")
 set(PACKAGE_VERSION ${VERSION})
 set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME "${PACKAGE_NAME}")
@@ -74,7 +74,7 @@ endif()
 if(MSVC OR NOT BUILD_tools_default)
     set(BUILD_doc_default OFF)
 else()
-    find_program(DOCBOOK_TO_MAN NAMES docbook2x-man docbook2man docbook-to-man)
+    find_program(DOCBOOK_TO_MAN NAMES docbook2x-man db2x_docbook2man docbook2man docbook-to-man)
     if(DOCBOOK_TO_MAN)
         set(BUILD_doc_default ON)
     else()
@@ -103,12 +103,17 @@ endif()
 set(XML_CONTEXT_BYTES 1024 CACHE STRING "Define to specify how much context to retain around the current parse point")
 option(XML_DTD "Define to make parameter entity parsing functionality available" ON)
 option(XML_NS "Define to make XML Namespaces functionality available" ON)
+option(WARNINGS_AS_ERRORS "Treat all compiler warnings as errors" OFF)
 if(NOT WIN32)
     option(XML_DEV_URANDOM "Define to include code reading entropy from `/dev/urandom'." ON)
     if(XML_DEV_URANDOM)
-        add_definitions(-DXML_DEV_URANDOM)
-    endif()
+        set(XML_DEV_URANDOM 1)
+    else(XML_DEV_URANDOM)
+        set(XML_DEV_URANDOM 0)
+    endif(XML_DEV_URANDOM)
 endif()
+option(XML_UNICODE "Use UTF-16 encoded chars (two bytes) instead of UTF-8" OFF)
+option(XML_UNICODE_WCHAR_T "Use wchar_t to represent UTF-16 instead of unsigned short" OFF)
 
 if(XML_DTD)
     set(XML_DTD 1)
@@ -120,6 +125,25 @@ if(XML_NS)
 else(XML_NS)
     set(XML_NS 0)
 endif(XML_NS)
+if(XML_UNICODE)
+    set(XML_UNICODE 1)
+else(XML_UNICODE)
+    set(XML_UNICODE 0)
+endif(XML_UNICODE)
+if(XML_UNICODE_WCHAR_T)
+    set(XML_UNICODE_WCHAR_T 1)
+else(XML_UNICODE_WCHAR_T)
+    set(XML_UNICODE_WCHAR_T 0)
+endif(XML_UNICODE_WCHAR_T)
+
+if(XML_UNICODE_WCHAR_T AND NOT XML_UNICODE)
+    message(SEND_ERROR "Option XML_UNICODE_WCHAR_T=ON may not be used without XML_UNICODE=ON.")
+    set(XML_UNICODE 1)
+endif(XML_UNICODE_WCHAR_T AND NOT XML_UNICODE)
+
+if(BUILD_tools AND (XML_UNICODE AND NOT XML_UNICODE_WCHAR_T))
+    message(SEND_ERROR "The xmlwf tool can not be built with option XML_UNICODE_WCHAR_T=OFF and XML_UNICODE=ON. Either set XML_UNICODE_WCHAR_T=ON or BUILD_tools=OFF.")
+endif()
 
 if(BUILD_tests)
     enable_testing()
@@ -131,8 +155,38 @@ set(EXTRA_COMPILE_FLAGS)
 if(FLAG_NO_STRICT_ALIASING)
     set(EXTRA_COMPILE_FLAGS "${EXTRA_COMPILE_FLAGS} -fno-strict-aliasing")
 endif()
+if(FLAG_VISIBILITY)
+  add_definitions(-DXML_ENABLE_VISIBILITY=1)
+  set(EXTRA_COMPILE_FLAGS "${EXTRA_COMPILE_FLAGS} -fvisibility=hidden")
+endif(FLAG_VISIBILITY)
+if (WARNINGS_AS_ERRORS)
+    if(MSVC)
+        add_definitions(/WX)
+    else(MSVC)
+        set(EXTRA_COMPILE_FLAGS "${EXTRA_COMPILE_FLAGS} -Werror")
+    endif(MSVC)
+endif(WARNINGS_AS_ERRORS)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}")
+
+set(MSVC_USE_STATIC_CRT OFF CACHE BOOL "Use /MT flag (static CRT) when compiling in MSVC")
+if (MSVC)
+    if (MSVC_USE_STATIC_CRT)
+        message("-- Using static CRT ${MSVC_USE_STATIC_CRT}")
+        foreach(flag_var
+                CMAKE_CXX_FLAGS_DEBUG
+                CMAKE_CXX_FLAGS_RELEASE
+                CMAKE_CXX_FLAGS_MINSIZEREL
+                CMAKE_CXX_FLAGS_RELWITHDEBINFO
+                CMAKE_C_FLAGS_DEBUG
+                CMAKE_C_FLAGS_RELEASE
+                CMAKE_C_FLAGS_MINSIZEREL
+                CMAKE_C_FLAGS_RELWITHDEBINFO
+                )
+            string(REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+        endforeach()
+    endif()
+endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 if(MSVC)
@@ -161,7 +215,7 @@ if(WIN32 AND BUILD_SHARED_LIBS)
 endif()
 
 set(LIBCURRENT 7)   # sync
-set(LIBREVISION 7)  # with
+set(LIBREVISION 9)  # with
 set(LIBAGE 6)       # configure.ac!
 math(EXPR LIBCURRENT_MINUS_AGE "${LIBCURRENT} - ${LIBAGE}")
 
