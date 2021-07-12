@@ -1,4 +1,4 @@
-.,.,,"AUTHORS, Changes,README,COPYING,h,md,cmake,in"
+.,.,,"AUTHORS, Changes,README,COPYING,h,cmake,in"
 lib,lib,,"h,c,def"
 doc,doc,,"png,html,css,1,xml"
 tests,tests,,"h,c,cpp,py"
