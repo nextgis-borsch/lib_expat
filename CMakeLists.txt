@@ -445,11 +445,11 @@ if(EXPAT_BUILD_TESTS)
 
     add_executable(runtests tests/runtests.c ${test_SRCS})
     set_property(TARGET runtests PROPERTY RUNTIME_OUTPUT_DIRECTORY tests)
-    add_test(runtests $<TARGET_FILE:runtests>)
+    add_test(runtests tests/runtests)
 
     add_executable(runtestspp tests/runtestspp.cpp ${test_SRCS})
     set_property(TARGET runtestspp PROPERTY RUNTIME_OUTPUT_DIRECTORY tests)
-    add_test(runtestspp $<TARGET_FILE:runtestspp>)
+    add_test(runtestspp tests/runtestspp)
 
     if(EXPAT_WITH_LIBBSD)
         target_link_libraries(runtests ${LIB_BSD})
