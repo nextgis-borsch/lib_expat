@@ -35,7 +35,7 @@
 # Unlike most of Expat,
 # this file is copyrighted under the BSD-license for buildsystem files of KDE.
 
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.16.3)
 
 project(expat
     VERSION
@@ -43,6 +43,11 @@ project(expat
     LANGUAGES
         C
 )
+
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/borsch/cmake/version.cmake)
+report_version(expat ${PROJECT_VERSION})
+write_version(${CMAKE_CURRENT_SOURCE_DIR}/Changes 2 7 3)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)  # i.e. -std=c99 rather than default -std=gnu99
@@ -311,7 +316,6 @@ macro(expat_install)
 endmacro()
 
 configure_file(expat_config.h.cmake "${CMAKE_CURRENT_BINARY_DIR}/expat_config.h")
-expat_install(FILES "${CMAKE_CURRENT_BINARY_DIR}/expat_config.h" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
 set(EXTRA_COMPILE_FLAGS)
@@ -515,13 +519,6 @@ if(WIN32 AND EXPAT_SHARED_LIBS)
     target_compile_definitions(expat PRIVATE VER_FILEVERSION=${_EXPAT_DLL_VERSION})
 endif()
 
-expat_install(TARGETS expat EXPORT expat
-                      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-                      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-                      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-expat_install(FILES lib/expat.h lib/expat_external.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 #
 # pkg-config file
 #
@@ -617,9 +614,10 @@ endif()
 #
 # C/C++ test runners
 #
-if(EXPAT_BUILD_TESTS)
+option(BUILD_TESTING "Build unit tests" ON)  # Switch to off by default
+if(BUILD_TESTING)
     ## these are unittests that can be run on any platform
-    enable_testing()
+    include(CTest)
 
     if(NOT MSVC)
         if(MINGW)
@@ -884,70 +882,18 @@ if(EXPAT_BUILD_TOOLS AND NOT MSVC)
     add_dependencies(run-xmltest xmltest-log-verified)
 endif()
 
-#
-# Documentation
-#
-configure_file(Changes changelog COPYONLY)
-expat_install(
-    FILES
-        AUTHORS
-        ${CMAKE_CURRENT_BINARY_DIR}/changelog
-    DESTINATION
-        ${CMAKE_INSTALL_DOCDIR})
-
-#
-# CMake files for find_package(expat [..] CONFIG [..])
-#
-configure_package_config_file(
-        cmake/expat-config.cmake.in
-        cmake/expat-config.cmake
-    INSTALL_DESTINATION
-        ${CMAKE_INSTALL_LIBDIR}/cmake/expat-${PROJECT_VERSION}/
-)
-write_basic_package_version_file(
-    cmake/expat-config-version.cmake
-    COMPATIBILITY SameMajorVersion  # i.e. semver
-)
-export(
-    TARGETS
-        expat
-    FILE
-        cmake/expat-targets.cmake  # not going to be installed
-)
-expat_install(
-    FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/cmake/expat-config.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/cmake/expat-config-version.cmake
-    DESTINATION
-        ${CMAKE_INSTALL_LIBDIR}/cmake/expat-${PROJECT_VERSION}/
-)
-expat_install(
-    EXPORT
-        expat
-    DESTINATION
-        ${CMAKE_INSTALL_LIBDIR}/cmake/expat-${PROJECT_VERSION}/
-    NAMESPACE
-        expat::
-)
-
-#
-# CPack
-#
-
-# This effectively disables target "package_source".
-# That is done due to CPack's unfortunate choice of an exclusion list
-# rather than inclusion list.  An exclusion list does not protect against
-# unwanted files ending up in the resulting archive in a way that's
-# safe to run from an Expat developer's machine.
-set(CPACK_SOURCE_GENERATOR '')
-
-if(WIN32)
-    set(CPACK_GENERATOR ZIP)
-else()
-    set(CPACK_GENERATOR TGZ)
+# Installing and packaging ====================================================
+if(NOT DEFINED PACKAGE_VENDOR)
+    set(PACKAGE_VENDOR NextGIS)
 endif()
 
-include(CPack)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/borsch/cmake/packaging.cmake)
+create_borsch_package(${PROJECT_NAME}
+    VENDOR ${PACKAGE_VENDOR}
+    VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion
+    TARGETS expat
+    HEADERS lib/expat.h lib/expat_external.h "${CMAKE_CURRENT_BINARY_DIR}/expat_config.h"
+)
 
 #
 # Summary
